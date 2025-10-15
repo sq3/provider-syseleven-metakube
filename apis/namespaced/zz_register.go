@@ -10,15 +10,23 @@ package namespaced
 import (
 	"k8s.io/apimachinery/pkg/runtime"
 
-	v1alpha1 "github.com/crossplane/upjet-provider-template/apis/namespaced/null/v1alpha1"
-	v1alpha1namespaced "github.com/crossplane/upjet-provider-template/apis/namespaced/v1alpha1"
-	v1beta1 "github.com/crossplane/upjet-provider-template/apis/namespaced/v1beta1"
+	v1alpha1 "github.com/sq3/provider-syseleven-metakube/apis/namespaced/cluster/v1alpha1"
+	v1alpha1maintenance "github.com/sq3/provider-syseleven-metakube/apis/namespaced/maintenance/v1alpha1"
+	v1alpha1metakube "github.com/sq3/provider-syseleven-metakube/apis/namespaced/metakube/v1alpha1"
+	v1alpha1node "github.com/sq3/provider-syseleven-metakube/apis/namespaced/node/v1alpha1"
+	v1alpha1role "github.com/sq3/provider-syseleven-metakube/apis/namespaced/role/v1alpha1"
+	v1alpha1namespaced "github.com/sq3/provider-syseleven-metakube/apis/namespaced/v1alpha1"
+	v1beta1 "github.com/sq3/provider-syseleven-metakube/apis/namespaced/v1beta1"
 )
 
 func init() {
 	// Register the types with the Scheme so the components can map objects to GroupVersionKinds and back
 	AddToSchemes = append(AddToSchemes,
 		v1alpha1.SchemeBuilder.AddToScheme,
+		v1alpha1maintenance.SchemeBuilder.AddToScheme,
+		v1alpha1metakube.SchemeBuilder.AddToScheme,
+		v1alpha1node.SchemeBuilder.AddToScheme,
+		v1alpha1role.SchemeBuilder.AddToScheme,
 		v1alpha1namespaced.SchemeBuilder.AddToScheme,
 		v1beta1.SchemeBuilder.AddToScheme,
 	)

@@ -1,0 +1,21 @@
+apiVersion: node.syseleven-metakube./v1alpha1
+kind: Deployment
+metadata:
+  annotations:
+    meta.upbound.io/example-id: node/v1alpha1/deployment
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    clusterId: ${metakube_cluster.example.id}
+    spec:
+    - replicas: 2
+      template:
+      - cloud:
+        - openstack:
+          - flavor: m1.small
+            image: Ubuntu 20.04
+        operatingSystem:
+        - ubuntu:
+          - distUpgradeOnBoot: false

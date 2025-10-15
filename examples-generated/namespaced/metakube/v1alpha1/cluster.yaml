@@ -1,0 +1,18 @@
+apiVersion: metakube.syseleven-metakube.m./v1alpha1
+kind: Cluster
+metadata:
+  annotations:
+    meta.upbound.io/example-id: metakube/v1alpha1/cluster
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    dcName: europe-west3-c
+    projectId: example-project-id
+    spec:
+    - cloud:
+      - aws:
+        - instanceProfileName: example-profile-name
+      version: 1.18.8

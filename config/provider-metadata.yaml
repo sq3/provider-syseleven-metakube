@@ -1,40 +1,178 @@
-name: hashicorp/null
+name: syseleven/metakube
 resources:
-    null_resource:
+    metakube_cluster:
         subCategory: ""
-        description: The null_resource resource implements the standard resource lifecycle but takes no further action. On Terraform 1.4 and later, use the terraform_data resource type https://developer.hashicorp.com/terraform/language/resources/terraform-data instead. Terraform 1.9 and later support the moved configuration block from null_resource to terraform_data. The triggers argument allows specifying an arbitrary set of values that, when changed, will cause the resource to be replaced.
-        name: null_resource
-        title: null_resource Resource - terraform-provider-null
+        description: Cluster resource in the provider defines the corresponding cluster in MetaKube
+        name: metakube_cluster
+        title: metakube_cluster Resource - terraform-provider-metakube
         examples:
-            - name: cluster
+            - name: example
               manifest: |-
                 {
-                  "connection": [
+                  "dc_name": "europe-west3-c",
+                  "name": "example",
+                  "project_id": "example-project-id",
+                  "spec": [
                     {
-                      "host": "${element(aws_instance.cluster[*].public_ip, 0)}"
+                      "cloud": [
+                        {
+                          "aws": [
+                            {
+                              "instance_profile_name": "example-profile-name"
+                            }
+                          ]
+                        }
+                      ],
+                      "version": "1.18.8"
                     }
-                  ],
-                  "provisioner": {
-                    "remote-exec": [
-                      {
-                        "inline": [
-                          "bootstrap-cluster.sh ${join(\" \",\n      aws_instance.cluster[*].private_ip)}"
-                        ]
-                      }
-                    ]
-                  },
-                  "triggers": {
-                    "cluster_instance_ids": "${join(\",\", aws_instance.cluster[*].id)}"
-                  }
+                  ]
                 }
-              dependencies:
-                aws_instance.cluster: |-
-                    {
-                      "ami": "ami-0dcc1e21636832c5d",
-                      "count": 3,
-                      "instance_type": "m5.large"
-                    }
         argumentDocs:
-            id: (String) This is set to a random value at create time.
-            triggers: (Map of String) A map of arbitrary strings that, when changed, will force the null resource to be replaced, re-running any associated provisioners.
+            audit_logging: (Boolean) Whether to enable audit logging or not
+            cluster_id: (String) The id of the cluster resource belongs to
+            creation_timestamp: (String) Creation timestamp
+            dc_name: (String) Data center name
+            deletion_timestamp: (String) Deletion timestamp
+            enable_ssh_agent: (Boolean) SSH Agent as a daemon running on each node that can manage ssh keys. Disable it if you want to manage keys manually
+            id: (String) Cluster identifier
+            ip_family: (String) Represents IP address family to use for the Cluster
+            kube_config: (String, Sensitive) Admin kube config raw content
+            kube_login_kube_config: (String) The kubelogin config content
+            labels: (Map of String) Labels added to cluster
+            name: (String) Cluster name
+            oidc_kube_config: (String, Sensitive) Plain Open ID Connect kube config raw content
+            pod_node_selector: (Boolean) Configure PodNodeSelector admission plugin at the apiserver
+            pod_security_policy: (Boolean) Pod security policies allow detailed authorization of pod creation and updates
+            pods_cidr: (String) Internal IP range for Pods
+            project_id: (String) Reference project identifier
+            services_cidr: (String) Internal IP range for ClusterIP Services
+            sshkeys: (Set of String) SSH keys attached to nodes
+            version: (String) Cloud orchestrator version, either Kubernetes or OpenShift
+        importStatements:
+            - $ terraform import metakube_cluster.example project-id:cluster-id
+    metakube_cluster_role_binding:
+        subCategory: ""
+        description: Cluster role binding allows binding cluster roles to users and groups
+        name: metakube_cluster_role_binding
+        title: metakube_cluster_role_binding Resource - terraform-provider-metakube
+        argumentDocs:
+            cluster_id: (String) The id of the cluster resource belongs to
+            cluster_role_name: (String) The name of the cluster role to bind to
+            id: (String)
+            kind: (String) Can be either 'user' or 'group'
+            name: (String) Subject name
+            project_id: (String) The id of the project resource belongs to
         importStatements: []
+    metakube_maintenance_cron_job:
+        subCategory: ""
+        description: Maintenance cron job resource manages scheduled maintenance tasks for clusters
+        name: metakube_maintenance_cron_job
+        title: metakube_maintenance_cron_job Resource - terraform-provider-metakube
+        argumentDocs:
+            cluster_id: (String) Cluster that maintenance cron job belongs to
+            creation_timestamp: (String) Creation timestamp
+            deletion_timestamp: (String) Deletion timestamp
+            id: (String)
+            name: (String) Maintenance cron job name
+            options: (Map of String) Map of string keys and values that can be used to set certain options for the given maintenance type
+            project_id: (String) Reference project identifier
+            rollback: (Boolean) Indicates whether the maintenance done should be rolled back
+            schedule: (String) A schedule in cron format
+            type: (String) Defines the type of maintenance that should be run
+        importStatements: []
+    metakube_node_deployment:
+        subCategory: ""
+        description: Node deployment resource manages worker nodes in a cluster
+        name: metakube_node_deployment
+        title: metakube_node_deployment Resource - terraform-provider-metakube
+        examples:
+            - name: example
+              manifest: |-
+                {
+                  "cluster_id": "${metakube_cluster.example.id}",
+                  "spec": [
+                    {
+                      "replicas": 2,
+                      "template": [
+                        {
+                          "cloud": [
+                            {
+                              "openstack": [
+                                {
+                                  "flavor": "m1.small",
+                                  "image": "Ubuntu 20.04"
+                                }
+                              ]
+                            }
+                          ],
+                          "operating_system": [
+                            {
+                              "ubuntu": [
+                                {
+                                  "dist_upgrade_on_boot": false
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+        argumentDocs:
+            ami: (String) Amazon Machine Image to use
+            assign_public_ip: (Boolean) Flag which controls a property of the AWS instance
+            availability_zone: (String) Availability zone in which to place the node
+            cluster_id: (String) Cluster that node deployment belongs to
+            creation_timestamp: (String) Creation timestamp
+            deletion_timestamp: (String) Deletion timestamp
+            disable_auto_update: (Boolean) Disable flatcar auto update feature
+            disk_size: (Number) Size of the volume in GBs
+            dist_upgrade_on_boot: (Boolean) Upgrade operating system on boot
+            effect: (String) Taint effect
+            flavor: (String) Instance type
+            id: (String)
+            image: (String) Image to use
+            instance_type: (String) EC2 instance type
+            key: (String) Taint key
+            kubelet: (String) Kubelet version
+            labels: (Map of String) Map of string keys and values that can be used to organize and categorize objects
+            max_replicas: (Number) Maximum number of replicas to scale up
+            min_replicas: (Number) Minimum number of replicas to downscale
+            name: (String) Node deployment name
+            project_id: (String) Project the cluster belongs to
+            replicas: (Number) Number of replicas
+            size: (String) VM size
+            subnet_id: (String) The VPC subnet to which the node shall be connected
+            tags: (Map of String) Additional instance tags
+            use_floating_ip: (Boolean) Indicate use of floating ip
+            value: (String) Taint value
+            volume_type: (String) EBS volume type
+        importStatements:
+            - $ terraform import metakube_node_deployment.example project-id:cluster-id:node-deployment-id
+    metakube_role_binding:
+        subCategory: ""
+        description: Role binding allows binding roles to users and groups in a namespace
+        name: metakube_role_binding
+        title: metakube_role_binding Resource - terraform-provider-metakube
+        argumentDocs:
+            cluster_id: (String) The id of the cluster resource belongs to
+            id: (String)
+            kind: (String) Can be either 'user' or 'group'
+            name: (String) Subject name
+            namespace: (String) The name of the namespace
+            project_id: (String) The id of the project resource belongs to
+            role_name: (String) The name of the role to bind to
+        importStatements: []
+    metakube_sshkey:
+        subCategory: ""
+        description: SSH key resource for MetaKube
+        name: metakube_sshkey
+        title: metakube_sshkey Resource - terraform-provider-metakube
+        argumentDocs:
+            id: (String)
+            name: (String)
+            project_id: (String)
+            public_key: (String)
+        importStatements:
+            - $ terraform import metakube_sshkey.example project-id:sshkey-id

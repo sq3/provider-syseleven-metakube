@@ -1,4 +1,4 @@
-module github.com/crossplane/upjet-provider-template
+module github.com/sq3/provider-syseleven-metakube
 
 go 1.24.7
 
