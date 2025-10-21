@@ -1,4 +1,4 @@
-apiVersion: node.syseleven-metakube.m./v1alpha1
+apiVersion: node.syseleven-metakube.m/v1alpha1
 kind: Deployment
 metadata:
   annotations:

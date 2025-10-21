@@ -4,18 +4,18 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.18.0
-  name: bindings.role.syseleven-metakube.
+  name: cronjobs.maintenance.syseleven-metakube
 spec:
-  group: role.syseleven-metakube.
+  group: maintenance.syseleven-metakube
   names:
     categories:
     - crossplane
     - managed
     - syseleven-metakube
-    kind: Binding
-    listKind: BindingList
-    plural: bindings
-    singular: binding
+    kind: CronJob
+    listKind: CronJobList
+    plural: cronjobs
+    singular: cronjob
   scope: Cluster
   versions:
   - additionalPrinterColumns:
@@ -34,8 +34,8 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: Binding is the Schema for the Bindings API. Role binding allows
-          binding roles to users and groups in a namespace
+        description: CronJob is the Schema for the CronJobs API. Maintenance cron
+          job resource manages scheduled maintenance tasks for clusters
         properties:
           apiVersion:
             description: |-
@@ -55,7 +55,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: BindingSpec defines the desired state of Binding
+            description: CronJobSpec defines the desired state of CronJob
             properties:
               deletionPolicy:
                 default: Delete
@@ -75,40 +75,54 @@ spec:
                 properties:
                   clusterId:
                     description: |-
-                      (String) The id of the cluster resource belongs to
-                      The id of the cluster resource belongs to
+                      (String) Cluster that maintenance cron job belongs to
+                      Cluster that maintenance cron job belongs to
                     type: string
-                  namespace:
-                    description: |-
-                      (String) The name of the namespace
-                      The name of the namespace
-                    type: string
-                  projectId:
-                    description: |-
-                      (String) The id of the project resource belongs to
-                      The id of the project resource belongs to
-                    type: string
-                  roleName:
-                    description: |-
-                      (String) The name of the role to bind to
-                      The name of the role to bind to
-                    type: string
-                  subject:
-                    description: Users and groups to bind for
+                  spec:
+                    description: Maintenance cron job specification
                     items:
                       properties:
-                        kind:
+                        maintenanceJobTemplate:
+                          description: MaintenanceJob template specification
+                          items:
+                            properties:
+                              options:
+                                description: |-
+                                  (Map of String) Map of string keys and values that can be used to set certain options for the given maintenance type
+                                  Ubuntu operating system
+                                items:
+                                  properties:
+                                    options:
+                                      additionalProperties:
+                                        type: string
+                                      description: |-
+                                        (Map of String) Map of string keys and values that can be used to set certain options for the given maintenance type
+                                        Map of string keys and values that can be used to set certain options for the given maintenance type.
+                                      type: object
+                                      x-kubernetes-map-type: granular
+                                  type: object
+                                type: array
+                              rollback:
+                                description: |-
+                                  (Boolean) Indicates whether the maintenance done should be rolled back
+                                  Indicates whether the maintenance done should be rolled back
+                                type: boolean
+                              type:
+                                description: |-
+                                  (String) Defines the type of maintenance that should be run
+                                  Defines the type of maintenance that should be run
+                                type: string
+                            type: object
+                          type: array
+                        schedule:
                           description: |-
-                            (String) Can be either 'user' or 'group'
-                            Can be either 'user' or 'group'
-                          type: string
-                        name:
-                          description: |-
-                            (String) Subject name
-                            Subject name
+                            (String) A schedule in cron format
+                            A schedule in cron format
                           type: string
                       type: object
                     type: array
+                required:
+                - clusterId
                 type: object
               initProvider:
                 description: |-
@@ -123,39 +137,46 @@ spec:
                   for example because of an external controller is managing them, like an
                   autoscaler.
                 properties:
-                  clusterId:
-                    description: |-
-                      (String) The id of the cluster resource belongs to
-                      The id of the cluster resource belongs to
-                    type: string
-                  namespace:
-                    description: |-
-                      (String) The name of the namespace
-                      The name of the namespace
-                    type: string
-                  projectId:
-                    description: |-
-                      (String) The id of the project resource belongs to
-                      The id of the project resource belongs to
-                    type: string
-                  roleName:
-                    description: |-
-                      (String) The name of the role to bind to
-                      The name of the role to bind to
-                    type: string
-                  subject:
-                    description: Users and groups to bind for
+                  spec:
+                    description: Maintenance cron job specification
                     items:
                       properties:
-                        kind:
+                        maintenanceJobTemplate:
+                          description: MaintenanceJob template specification
+                          items:
+                            properties:
+                              options:
+                                description: |-
+                                  (Map of String) Map of string keys and values that can be used to set certain options for the given maintenance type
+                                  Ubuntu operating system
+                                items:
+                                  properties:
+                                    options:
+                                      additionalProperties:
+                                        type: string
+                                      description: |-
+                                        (Map of String) Map of string keys and values that can be used to set certain options for the given maintenance type
+                                        Map of string keys and values that can be used to set certain options for the given maintenance type.
+                                      type: object
+                                      x-kubernetes-map-type: granular
+                                  type: object
+                                type: array
+                              rollback:
+                                description: |-
+                                  (Boolean) Indicates whether the maintenance done should be rolled back
+                                  Indicates whether the maintenance done should be rolled back
+                                type: boolean
+                              type:
+                                description: |-
+                                  (String) Defines the type of maintenance that should be run
+                                  Defines the type of maintenance that should be run
+                                type: string
+                            type: object
+                          type: array
+                        schedule:
                           description: |-
-                            (String) Can be either 'user' or 'group'
-                            Can be either 'user' or 'group'
-                          type: string
-                        name:
-                          description: |-
-                            (String) Subject name
-                            Subject name
+                            (String) A schedule in cron format
+                            A schedule in cron format
                           type: string
                       type: object
                     type: array
@@ -247,67 +268,78 @@ spec:
             - forProvider
             type: object
             x-kubernetes-validations:
-            - message: spec.forProvider.clusterId is a required parameter
+            - message: spec.forProvider.spec is a required parameter
               rule: '!(''*'' in self.managementPolicies || ''Create'' in self.managementPolicies
-                || ''Update'' in self.managementPolicies) || has(self.forProvider.clusterId)
-                || (has(self.initProvider) && has(self.initProvider.clusterId))'
-            - message: spec.forProvider.namespace is a required parameter
-              rule: '!(''*'' in self.managementPolicies || ''Create'' in self.managementPolicies
-                || ''Update'' in self.managementPolicies) || has(self.forProvider.__namespace__)
-                || (has(self.initProvider) && has(self.initProvider.__namespace__))'
-            - message: spec.forProvider.projectId is a required parameter
-              rule: '!(''*'' in self.managementPolicies || ''Create'' in self.managementPolicies
-                || ''Update'' in self.managementPolicies) || has(self.forProvider.projectId)
-                || (has(self.initProvider) && has(self.initProvider.projectId))'
-            - message: spec.forProvider.roleName is a required parameter
-              rule: '!(''*'' in self.managementPolicies || ''Create'' in self.managementPolicies
-                || ''Update'' in self.managementPolicies) || has(self.forProvider.roleName)
-                || (has(self.initProvider) && has(self.initProvider.roleName))'
-            - message: spec.forProvider.subject is a required parameter
-              rule: '!(''*'' in self.managementPolicies || ''Create'' in self.managementPolicies
-                || ''Update'' in self.managementPolicies) || has(self.forProvider.subject)
-                || (has(self.initProvider) && has(self.initProvider.subject))'
+                || ''Update'' in self.managementPolicies) || has(self.forProvider.spec)
+                || (has(self.initProvider) && has(self.initProvider.spec))'
           status:
-            description: BindingStatus defines the observed state of Binding.
+            description: CronJobStatus defines the observed state of CronJob.
             properties:
               atProvider:
                 properties:
                   clusterId:
                     description: |-
-                      (String) The id of the cluster resource belongs to
-                      The id of the cluster resource belongs to
+                      (String) Cluster that maintenance cron job belongs to
+                      Cluster that maintenance cron job belongs to
+                    type: string
+                  creationTimestamp:
+                    description: |-
+                      (String) Creation timestamp
+                      Creation timestamp
+                    type: string
+                  deletionTimestamp:
+                    description: |-
+                      (String) Deletion timestamp
+                      Deletion timestamp
                     type: string
                   id:
                     description: (String)
                     type: string
-                  namespace:
-                    description: |-
-                      (String) The name of the namespace
-                      The name of the namespace
-                    type: string
                   projectId:
                     description: |-
-                      (String) The id of the project resource belongs to
-                      The id of the project resource belongs to
+                      (String) Reference project identifier
+                      Reference project identifier
                     type: string
-                  roleName:
-                    description: |-
-                      (String) The name of the role to bind to
-                      The name of the role to bind to
-                    type: string
-                  subject:
-                    description: Users and groups to bind for
+                  spec:
+                    description: Maintenance cron job specification
                     items:
                       properties:
-                        kind:
+                        maintenanceJobTemplate:
+                          description: MaintenanceJob template specification
+                          items:
+                            properties:
+                              options:
+                                description: |-
+                                  (Map of String) Map of string keys and values that can be used to set certain options for the given maintenance type
+                                  Ubuntu operating system
+                                items:
+                                  properties:
+                                    options:
+                                      additionalProperties:
+                                        type: string
+                                      description: |-
+                                        (Map of String) Map of string keys and values that can be used to set certain options for the given maintenance type
+                                        Map of string keys and values that can be used to set certain options for the given maintenance type.
+                                      type: object
+                                      x-kubernetes-map-type: granular
+                                  type: object
+                                type: array
+                              rollback:
+                                description: |-
+                                  (Boolean) Indicates whether the maintenance done should be rolled back
+                                  Indicates whether the maintenance done should be rolled back
+                                type: boolean
+                              type:
+                                description: |-
+                                  (String) Defines the type of maintenance that should be run
+                                  Defines the type of maintenance that should be run
+                                type: string
+                            type: object
+                          type: array
+                        schedule:
                           description: |-
-                            (String) Can be either 'user' or 'group'
-                            Can be either 'user' or 'group'
-                          type: string
-                        name:
-                          description: |-
-                            (String) Subject name
-                            Subject name
+                            (String) A schedule in cron format
+                            A schedule in cron format
                           type: string
                       type: object
                     type: array
