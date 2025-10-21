@@ -98,7 +98,7 @@ spec:
     spec:
     - cloud:
       - openstack: []
-      version: "1.28.0"
+      version: "1.34.1"
   providerConfigRef:
     name: default
 ```
