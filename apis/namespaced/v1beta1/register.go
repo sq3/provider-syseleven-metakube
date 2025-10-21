@@ -9,7 +9,7 @@ import (
 
 // Package type metadata.
 const (
-	Group   = "syseleven-metakube.m."
+	Group   = "metakube.m.syseleven.io"
 	Version = "v1beta1"
 )
 
