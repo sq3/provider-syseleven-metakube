@@ -1,4 +1,4 @@
-apiVersion: metakube.syseleven-metakube/v1alpha1
+apiVersion: metakube.metakube.syseleven.io/v1alpha1
 kind: Cluster
 metadata:
   annotations:
