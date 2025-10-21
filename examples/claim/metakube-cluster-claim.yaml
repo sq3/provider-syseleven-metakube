@@ -1,0 +1,18 @@
+apiVersion: platform.example.com/v1alpha1
+kind: MetaKubeCluster
+metadata:
+  name: my-test-cluster
+  namespace: default
+spec:
+  parameters:
+    projectId: "YOUR_PROJECT_ID_HERE"
+    dcName: europe-west3-c
+    kubernetesVersion: "1.28.0"
+    cloudProvider: openstack
+    nodeCount: 2
+    nodeSize: m1.small
+    nodeImage: "Ubuntu 22.04"
+  compositionSelector:
+    matchLabels:
+      provider: syseleven
+      cloudProvider: openstack

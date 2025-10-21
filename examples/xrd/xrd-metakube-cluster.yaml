@@ -1,0 +1,74 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xmetakubeclusters.platform.example.com
+spec:
+  group: platform.example.com
+  names:
+    kind: XMetaKubeCluster
+    plural: xmetakubeclusters
+  claimNames:
+    kind: MetaKubeCluster
+    plural: metakubeclusters
+  versions:
+  - name: v1alpha1
+    served: true
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              parameters:
+                type: object
+                description: MetaKube cluster parameters
+                properties:
+                  projectId:
+                    type: string
+                    description: MetaKube project ID
+                  dcName:
+                    type: string
+                    description: Datacenter name (e.g., europe-west3-c)
+                    default: europe-west3-c
+                  kubernetesVersion:
+                    type: string
+                    description: Kubernetes version
+                    default: "1.28.0"
+                  cloudProvider:
+                    type: string
+                    description: Cloud provider (openstack, aws, azure)
+                    default: openstack
+                    enum:
+                    - openstack
+                    - aws
+                    - azure
+                  nodeCount:
+                    type: integer
+                    description: Number of worker nodes
+                    default: 2
+                  nodeSize:
+                    type: string
+                    description: Node size/flavor
+                    default: m1.small
+                  nodeImage:
+                    type: string
+                    description: Node operating system image
+                    default: "Ubuntu 22.04"
+                required:
+                - projectId
+            required:
+            - parameters
+          status:
+            type: object
+            properties:
+              clusterId:
+                type: string
+                description: The MetaKube cluster ID
+              clusterEndpoint:
+                type: string
+                description: The Kubernetes API endpoint
+              ready:
+                type: boolean
+                description: Whether the cluster is ready

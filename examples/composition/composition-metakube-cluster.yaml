@@ -1,0 +1,96 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: metakube-cluster-openstack
+  labels:
+    provider: syseleven
+    cloudProvider: openstack
+spec:
+  compositeTypeRef:
+    apiVersion: platform.example.com/v1alpha1
+    kind: XMetaKubeCluster
+
+  mode: Pipeline
+  pipeline:
+  - step: patch-and-transform
+    functionRef:
+      name: function-patch-and-transform
+    input:
+      apiVersion: pt.fn.crossplane.io/v1beta1
+      kind: Resources
+      resources:
+      - name: metakube-cluster
+        base:
+          apiVersion: metakube.syseleven-metakube/v1alpha1
+          kind: Cluster
+          spec:
+            forProvider:
+              spec:
+              - cloud:
+                - openstack: []
+            providerConfigRef:
+              name: default
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.parameters.projectId
+          toFieldPath: spec.forProvider.projectId
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.parameters.dcName
+          toFieldPath: spec.forProvider.dcName
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.parameters.kubernetesVersion
+          toFieldPath: spec.forProvider.spec[0].version
+        - type: FromCompositeFieldPath
+          fromFieldPath: metadata.name
+          toFieldPath: metadata.name
+        - type: ToCompositeFieldPath
+          fromFieldPath: status.atProvider.id
+          toFieldPath: status.clusterId
+        - type: ToCompositeFieldPath
+          fromFieldPath: status.conditions[?(@.type=='Ready')].status
+          toFieldPath: status.ready
+          transforms:
+          - type: map
+            map:
+              "True": true
+              "False": false
+
+      - name: node-deployment
+        base:
+          apiVersion: node.syseleven-metakube/v1alpha1
+          kind: Deployment
+          spec:
+            forProvider:
+              spec:
+              - template:
+                - cloud:
+                  - openstack:
+                    - flavor: m1.small
+                      image: "Ubuntu 22.04"
+                  operatingSystem:
+                  - ubuntu:
+                    - distUpgradeOnBoot: false
+            providerConfigRef:
+              name: default
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: status.clusterId
+          toFieldPath: spec.forProvider.clusterId
+          policy:
+            fromFieldPath: Required
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.parameters.nodeCount
+          toFieldPath: spec.forProvider.spec[0].replicas
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.parameters.nodeSize
+          toFieldPath: spec.forProvider.spec[0].template[0].cloud[0].openstack[0].flavor
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.parameters.nodeImage
+          toFieldPath: spec.forProvider.spec[0].template[0].cloud[0].openstack[0].image
+        - type: FromCompositeFieldPath
+          fromFieldPath: metadata.name
+          toFieldPath: metadata.name
+          transforms:
+          - type: string
+            string:
+              fmt: "%s-nodes"
