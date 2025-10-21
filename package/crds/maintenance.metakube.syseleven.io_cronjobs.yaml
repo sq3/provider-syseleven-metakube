@@ -4,18 +4,18 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.18.0
-  name: sshkeys.metakube.syseleven-metakube
+  name: cronjobs.maintenance.metakube.syseleven.io
 spec:
-  group: metakube.syseleven-metakube
+  group: maintenance.metakube.syseleven.io
   names:
     categories:
     - crossplane
     - managed
     - syseleven-metakube
-    kind: Sshkey
-    listKind: SshkeyList
-    plural: sshkeys
-    singular: sshkey
+    kind: CronJob
+    listKind: CronJobList
+    plural: cronjobs
+    singular: cronjob
   scope: Cluster
   versions:
   - additionalPrinterColumns:
@@ -34,8 +34,8 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: Sshkey is the Schema for the Sshkeys API. SSH key resource for
-          MetaKube
+        description: CronJob is the Schema for the CronJobs API. Maintenance cron
+          job resource manages scheduled maintenance tasks for clusters
         properties:
           apiVersion:
             description: |-
@@ -55,7 +55,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: SshkeySpec defines the desired state of Sshkey
+            description: CronJobSpec defines the desired state of CronJob
             properties:
               deletionPolicy:
                 default: Delete
@@ -73,14 +73,56 @@ spec:
                 type: string
               forProvider:
                 properties:
-                  projectId:
-                    description: (String)
+                  clusterId:
+                    description: |-
+                      (String) Cluster that maintenance cron job belongs to
+                      Cluster that maintenance cron job belongs to
                     type: string
-                  publicKey:
-                    description: (String)
-                    type: string
+                  spec:
+                    description: Maintenance cron job specification
+                    items:
+                      properties:
+                        maintenanceJobTemplate:
+                          description: MaintenanceJob template specification
+                          items:
+                            properties:
+                              options:
+                                description: |-
+                                  (Map of String) Map of string keys and values that can be used to set certain options for the given maintenance type
+                                  Ubuntu operating system
+                                items:
+                                  properties:
+                                    options:
+                                      additionalProperties:
+                                        type: string
+                                      description: |-
+                                        (Map of String) Map of string keys and values that can be used to set certain options for the given maintenance type
+                                        Map of string keys and values that can be used to set certain options for the given maintenance type.
+                                      type: object
+                                      x-kubernetes-map-type: granular
+                                  type: object
+                                type: array
+                              rollback:
+                                description: |-
+                                  (Boolean) Indicates whether the maintenance done should be rolled back
+                                  Indicates whether the maintenance done should be rolled back
+                                type: boolean
+                              type:
+                                description: |-
+                                  (String) Defines the type of maintenance that should be run
+                                  Defines the type of maintenance that should be run
+                                type: string
+                            type: object
+                          type: array
+                        schedule:
+                          description: |-
+                            (String) A schedule in cron format
+                            A schedule in cron format
+                          type: string
+                      type: object
+                    type: array
                 required:
-                - projectId
+                - clusterId
                 type: object
               initProvider:
                 description: |-
@@ -95,9 +137,49 @@ spec:
                   for example because of an external controller is managing them, like an
                   autoscaler.
                 properties:
-                  publicKey:
-                    description: (String)
-                    type: string
+                  spec:
+                    description: Maintenance cron job specification
+                    items:
+                      properties:
+                        maintenanceJobTemplate:
+                          description: MaintenanceJob template specification
+                          items:
+                            properties:
+                              options:
+                                description: |-
+                                  (Map of String) Map of string keys and values that can be used to set certain options for the given maintenance type
+                                  Ubuntu operating system
+                                items:
+                                  properties:
+                                    options:
+                                      additionalProperties:
+                                        type: string
+                                      description: |-
+                                        (Map of String) Map of string keys and values that can be used to set certain options for the given maintenance type
+                                        Map of string keys and values that can be used to set certain options for the given maintenance type.
+                                      type: object
+                                      x-kubernetes-map-type: granular
+                                  type: object
+                                type: array
+                              rollback:
+                                description: |-
+                                  (Boolean) Indicates whether the maintenance done should be rolled back
+                                  Indicates whether the maintenance done should be rolled back
+                                type: boolean
+                              type:
+                                description: |-
+                                  (String) Defines the type of maintenance that should be run
+                                  Defines the type of maintenance that should be run
+                                type: string
+                            type: object
+                          type: array
+                        schedule:
+                          description: |-
+                            (String) A schedule in cron format
+                            A schedule in cron format
+                          type: string
+                      type: object
+                    type: array
                 type: object
               managementPolicies:
                 default:
@@ -186,24 +268,81 @@ spec:
             - forProvider
             type: object
             x-kubernetes-validations:
-            - message: spec.forProvider.publicKey is a required parameter
+            - message: spec.forProvider.spec is a required parameter
               rule: '!(''*'' in self.managementPolicies || ''Create'' in self.managementPolicies
-                || ''Update'' in self.managementPolicies) || has(self.forProvider.publicKey)
-                || (has(self.initProvider) && has(self.initProvider.publicKey))'
+                || ''Update'' in self.managementPolicies) || has(self.forProvider.spec)
+                || (has(self.initProvider) && has(self.initProvider.spec))'
           status:
-            description: SshkeyStatus defines the observed state of Sshkey.
+            description: CronJobStatus defines the observed state of CronJob.
             properties:
               atProvider:
                 properties:
+                  clusterId:
+                    description: |-
+                      (String) Cluster that maintenance cron job belongs to
+                      Cluster that maintenance cron job belongs to
+                    type: string
+                  creationTimestamp:
+                    description: |-
+                      (String) Creation timestamp
+                      Creation timestamp
+                    type: string
+                  deletionTimestamp:
+                    description: |-
+                      (String) Deletion timestamp
+                      Deletion timestamp
+                    type: string
                   id:
                     description: (String)
                     type: string
                   projectId:
-                    description: (String)
+                    description: |-
+                      (String) Reference project identifier
+                      Reference project identifier
                     type: string
-                  publicKey:
-                    description: (String)
-                    type: string
+                  spec:
+                    description: Maintenance cron job specification
+                    items:
+                      properties:
+                        maintenanceJobTemplate:
+                          description: MaintenanceJob template specification
+                          items:
+                            properties:
+                              options:
+                                description: |-
+                                  (Map of String) Map of string keys and values that can be used to set certain options for the given maintenance type
+                                  Ubuntu operating system
+                                items:
+                                  properties:
+                                    options:
+                                      additionalProperties:
+                                        type: string
+                                      description: |-
+                                        (Map of String) Map of string keys and values that can be used to set certain options for the given maintenance type
+                                        Map of string keys and values that can be used to set certain options for the given maintenance type.
+                                      type: object
+                                      x-kubernetes-map-type: granular
+                                  type: object
+                                type: array
+                              rollback:
+                                description: |-
+                                  (Boolean) Indicates whether the maintenance done should be rolled back
+                                  Indicates whether the maintenance done should be rolled back
+                                type: boolean
+                              type:
+                                description: |-
+                                  (String) Defines the type of maintenance that should be run
+                                  Defines the type of maintenance that should be run
+                                type: string
+                            type: object
+                          type: array
+                        schedule:
+                          description: |-
+                            (String) A schedule in cron format
+                            A schedule in cron format
+                          type: string
+                      type: object
+                    type: array
                 type: object
               conditions:
                 description: Conditions of the resource.

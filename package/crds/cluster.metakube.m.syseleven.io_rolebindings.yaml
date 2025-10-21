@@ -4,18 +4,18 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.18.0
-  name: sshkeys.metakube.syseleven-metakube.m
+  name: rolebindings.cluster.metakube.m.syseleven.io
 spec:
-  group: metakube.syseleven-metakube.m
+  group: cluster.metakube.m.syseleven.io
   names:
     categories:
     - crossplane
     - managed
     - syseleven-metakube
-    kind: Sshkey
-    listKind: SshkeyList
-    plural: sshkeys
-    singular: sshkey
+    kind: RoleBinding
+    listKind: RoleBindingList
+    plural: rolebindings
+    singular: rolebinding
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -34,8 +34,8 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: Sshkey is the Schema for the Sshkeys API. SSH key resource for
-          MetaKube
+        description: RoleBinding is the Schema for the RoleBindings API. Cluster role
+          binding allows binding cluster roles to users and groups
         properties:
           apiVersion:
             description: |-
@@ -55,18 +55,41 @@ spec:
           metadata:
             type: object
           spec:
-            description: SshkeySpec defines the desired state of Sshkey
+            description: RoleBindingSpec defines the desired state of RoleBinding
             properties:
               forProvider:
                 properties:
+                  clusterId:
+                    description: |-
+                      (String) The id of the cluster resource belongs to
+                      The id of the cluster resource belongs to
+                    type: string
+                  clusterRoleName:
+                    description: |-
+                      (String) The name of the cluster role to bind to
+                      The name of the cluster role to bind to
+                    type: string
                   projectId:
-                    description: (String)
+                    description: |-
+                      (String) The id of the project resource belongs to
+                      The id of the project resource belongs to
                     type: string
-                  publicKey:
-                    description: (String)
-                    type: string
-                required:
-                - projectId
+                  subject:
+                    description: Users and groups to bind for
+                    items:
+                      properties:
+                        kind:
+                          description: |-
+                            (String) Can be either 'user' or 'group'
+                            Can be either 'user' or 'group'
+                          type: string
+                        name:
+                          description: |-
+                            (String) Subject name
+                            Subject name
+                          type: string
+                      type: object
+                    type: array
                 type: object
               initProvider:
                 description: |-
@@ -81,9 +104,37 @@ spec:
                   for example because of an external controller is managing them, like an
                   autoscaler.
                 properties:
-                  publicKey:
-                    description: (String)
+                  clusterId:
+                    description: |-
+                      (String) The id of the cluster resource belongs to
+                      The id of the cluster resource belongs to
                     type: string
+                  clusterRoleName:
+                    description: |-
+                      (String) The name of the cluster role to bind to
+                      The name of the cluster role to bind to
+                    type: string
+                  projectId:
+                    description: |-
+                      (String) The id of the project resource belongs to
+                      The id of the project resource belongs to
+                    type: string
+                  subject:
+                    description: Users and groups to bind for
+                    items:
+                      properties:
+                        kind:
+                          description: |-
+                            (String) Can be either 'user' or 'group'
+                            Can be either 'user' or 'group'
+                          type: string
+                        name:
+                          description: |-
+                            (String) Subject name
+                            Subject name
+                          type: string
+                      type: object
+                    type: array
                 type: object
               managementPolicies:
                 default:
@@ -144,24 +195,61 @@ spec:
             - forProvider
             type: object
             x-kubernetes-validations:
-            - message: spec.forProvider.publicKey is a required parameter
+            - message: spec.forProvider.clusterId is a required parameter
               rule: '!(''*'' in self.managementPolicies || ''Create'' in self.managementPolicies
-                || ''Update'' in self.managementPolicies) || has(self.forProvider.publicKey)
-                || (has(self.initProvider) && has(self.initProvider.publicKey))'
+                || ''Update'' in self.managementPolicies) || has(self.forProvider.clusterId)
+                || (has(self.initProvider) && has(self.initProvider.clusterId))'
+            - message: spec.forProvider.clusterRoleName is a required parameter
+              rule: '!(''*'' in self.managementPolicies || ''Create'' in self.managementPolicies
+                || ''Update'' in self.managementPolicies) || has(self.forProvider.clusterRoleName)
+                || (has(self.initProvider) && has(self.initProvider.clusterRoleName))'
+            - message: spec.forProvider.projectId is a required parameter
+              rule: '!(''*'' in self.managementPolicies || ''Create'' in self.managementPolicies
+                || ''Update'' in self.managementPolicies) || has(self.forProvider.projectId)
+                || (has(self.initProvider) && has(self.initProvider.projectId))'
+            - message: spec.forProvider.subject is a required parameter
+              rule: '!(''*'' in self.managementPolicies || ''Create'' in self.managementPolicies
+                || ''Update'' in self.managementPolicies) || has(self.forProvider.subject)
+                || (has(self.initProvider) && has(self.initProvider.subject))'
           status:
-            description: SshkeyStatus defines the observed state of Sshkey.
+            description: RoleBindingStatus defines the observed state of RoleBinding.
             properties:
               atProvider:
                 properties:
+                  clusterId:
+                    description: |-
+                      (String) The id of the cluster resource belongs to
+                      The id of the cluster resource belongs to
+                    type: string
+                  clusterRoleName:
+                    description: |-
+                      (String) The name of the cluster role to bind to
+                      The name of the cluster role to bind to
+                    type: string
                   id:
                     description: (String)
                     type: string
                   projectId:
-                    description: (String)
+                    description: |-
+                      (String) The id of the project resource belongs to
+                      The id of the project resource belongs to
                     type: string
-                  publicKey:
-                    description: (String)
-                    type: string
+                  subject:
+                    description: Users and groups to bind for
+                    items:
+                      properties:
+                        kind:
+                          description: |-
+                            (String) Can be either 'user' or 'group'
+                            Can be either 'user' or 'group'
+                          type: string
+                        name:
+                          description: |-
+                            (String) Subject name
+                            Subject name
+                          type: string
+                      type: object
+                    type: array
                 type: object
               conditions:
                 description: Conditions of the resource.
