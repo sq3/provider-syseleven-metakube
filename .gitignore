@@ -10,3 +10,4 @@ cover.out
 .vscode/
 .idea/
 examples/setup/secret.yaml
+examples/test-cluster.yaml

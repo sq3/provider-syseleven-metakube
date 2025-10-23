@@ -4,9 +4,9 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.18.0
-  name: providerconfigusages.metakube.syseleven.io
+  name: providerconfigusages.syseleven-metakube.
 spec:
-  group: metakube.syseleven.io
+  group: syseleven-metakube.
   names:
     categories:
     - crossplane
