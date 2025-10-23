@@ -51,10 +51,16 @@ func TerraformSetupBuilder(version, providerSource, providerVersion string) terr
 		}
 
 		// Set credentials in Terraform provider configuration.
+		// Use METAKUBE_HOST environment variable or default to SysEleven's MetaKube API
+		host := os.Getenv("METAKUBE_HOST")
+		if host == "" {
+			host = "https://metakube.syseleven.de"
+		}
+
 		ps.Configuration = map[string]any{
 			"metakube": []map[string]any{
 				{
-					"host":  "https://metakube.syseleven.de",
+					"host":  host,
 					"token": creds["token"],
 				},
 			},
