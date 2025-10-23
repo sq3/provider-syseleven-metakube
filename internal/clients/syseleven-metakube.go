@@ -51,10 +51,14 @@ func TerraformSetupBuilder(version, providerSource, providerVersion string) terr
 		}
 
 		// Set credentials in Terraform provider configuration.
-		/*ps.Configuration = map[string]any{
-			"username": creds["username"],
-			"password": creds["password"],
-		}*/
+		ps.Configuration = map[string]any{
+			"metakube": []map[string]any{
+				{
+					"host":  "https://metakube.syseleven.de",
+					"token": creds["token"],
+				},
+			},
+		}
 		return ps, nil
 	}
 }
