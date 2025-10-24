@@ -243,7 +243,7 @@ jobs:
       - lint
       - check-diff
       - unit-tests
-      - local-deploy
+      # - local-deploy
     if: needs.detect-noop.outputs.noop != 'true'
 
     steps:
