@@ -23,6 +23,6 @@ jobs:
       registry_org: sq3
       mirror: false
     secrets:
-      GHCR_PAT: ${{ secrets.GITHUB_TOKEN }}
+      GHCR_PAT: ${{ secrets.GHCR_TOKEN || secrets.GITHUB_TOKEN }}
       XPKG_MIRROR_TOKEN: ${{ secrets.XPKG_MIRROR_TOKEN }}
       XPKG_MIRROR_ACCESS_ID: ${{ secrets.XPKG_MIRROR_ACCESS_ID }}
