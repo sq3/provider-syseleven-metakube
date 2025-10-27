@@ -21,6 +21,7 @@ jobs:
       go-version: ${{ github.event.inputs.go-version }}
       cleanup-disk: true
       registry_org: sq3
+      visibility: public
       mirror: false
     secrets:
       GHCR_PAT: ${{ secrets.GHCR_TOKEN || secrets.GITHUB_TOKEN }}
