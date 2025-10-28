@@ -30,12 +30,12 @@ spec:
                     description: MetaKube project ID
                   dcName:
                     type: string
-                    description: Datacenter name (e.g., europe-west3-c)
-                    default: europe-west3-c
+                    description: Datacenter name (e.g., syseleven-dus2)
+                    default: syseleven-dus2
                   kubernetesVersion:
                     type: string
                     description: Kubernetes version
-                    default: "1.28.0"
+                    default: "1.31.1"
                   cloudProvider:
                     type: string
                     description: Cloud provider (openstack, aws, azure)
@@ -47,19 +47,29 @@ spec:
                   nodeCount:
                     type: integer
                     description: Number of worker nodes
-                    default: 2
+                    default: 3
                   nodeSize:
                     type: string
                     description: Node size/flavor
-                    default: m1.small
+                    default: m2.small
                   nodeImage:
                     type: string
                     description: Node operating system image
-                    default: "Ubuntu 22.04"
+                    default: "Ubuntu Jammy 22.04"
                 required:
                 - projectId
             required:
             - parameters
+          writeConnectionSecretToRef:
+            type: object
+            description: Reference where the cluster connection details will be written
+            properties:
+              name:
+                type: string
+                description: Secret name
+              namespace:
+                type: string
+                description: Secret namespace
           status:
             type: object
             properties:

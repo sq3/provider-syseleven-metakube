@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"os"
+	"strings"
 
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	"github.com/pkg/errors"
@@ -23,6 +24,8 @@ const (
 	errTrackUsage           = "cannot track ProviderConfig usage"
 	errExtractCredentials   = "cannot extract credentials"
 	errUnmarshalCredentials = "cannot unmarshal syseleven-metakube credentials as JSON"
+	errMissingToken         = "token not found in syseleven-metakube credentials"
+	errEmptyCredentials     = "syseleven-metakube credentials payload is empty"
 )
 
 // TerraformSetupBuilder builds Terraform a terraform.SetupFn function which
@@ -42,13 +45,24 @@ func TerraformSetupBuilder(version, providerSource, providerVersion string) terr
 			return terraform.Setup{}, errors.Wrap(err, "cannot resolve provider config")
 		}
 
-		data, err := resource.CommonCredentialExtractor(ctx, pcSpec.Credentials.Source, client, pcSpec.Credentials.CommonCredentialSelectors)
-		if err != nil {
-			return ps, errors.Wrap(err, errExtractCredentials)
+			data, err := resource.CommonCredentialExtractor(ctx, pcSpec.Credentials.Source, client, pcSpec.Credentials.CommonCredentialSelectors)
+			if err != nil {
+				return ps, errors.Wrap(err, errExtractCredentials)
+			}
+			if len(data) == 0 {
+				return ps, errors.New(errEmptyCredentials)
+			}
+			creds := map[string]string{}
+			if err := json.Unmarshal(data, &creds); err != nil {
+				rawToken := strings.TrimSpace(string(data))
+				if rawToken == "" {
+					return ps, errors.Wrap(err, errUnmarshalCredentials)
+			}
+			creds["token"] = rawToken
 		}
-		creds := map[string]string{}
-		if err := json.Unmarshal(data, &creds); err != nil {
-			return ps, errors.Wrap(err, errUnmarshalCredentials)
+		token := strings.TrimSpace(creds["token"])
+		if token == "" {
+			return ps, errors.New(errMissingToken)
 		}
 
 		// Set credentials in Terraform provider configuration.
@@ -61,7 +75,7 @@ func TerraformSetupBuilder(version, providerSource, providerVersion string) terr
 		// Provider configuration is flat, not nested
 		ps.Configuration = map[string]any{
 			"host":  host,
-			"token": creds["token"],
+			"token": token,
 		}
 		return ps, nil
 	}

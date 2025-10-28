@@ -32,10 +32,15 @@ spec:
                 - openstack:
                   - applicationCredentials:
                     - secretSecretRef:
-                        key: credentials
+                        key: token
                         name: metakube-creds
                         namespace: crossplane-system
         patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.writeConnectionSecretToRef
+          toFieldPath: spec.writeConnectionSecretToRef
+          policy:
+            fromFieldPath: Optional
         # Set projectId from claim
         - type: FromCompositeFieldPath
           fromFieldPath: spec.parameters.projectId
@@ -59,40 +64,35 @@ spec:
           fromFieldPath: metadata.name
           toFieldPath: metadata.name
         - type: ToCompositeFieldPath
-          fromFieldPath: status.atProvider.id
+          fromFieldPath: metadata.annotations[crossplane.io/external-name]
           toFieldPath: status.clusterId
-        - type: ToCompositeFieldPath
-          fromFieldPath: status.conditions[?(@.type=='Ready')].status
-          toFieldPath: status.ready
-          transforms:
-          - type: map
-            map:
-              "True": true
-              "False": false
-
-      - name: node-deployment
+      - name: metakube-node-deployment
         base:
-          apiVersion: node.syseleven-metakube/v1alpha1
+          apiVersion: node.metakube.syseleven.io/v1alpha1
           kind: Deployment
+          metadata:
+            name: worker-nodes
           spec:
-            forProvider:
-              spec:
-              - template:
-                - cloud:
-                  - openstack:
-                    - flavor: m1.small
-                      image: "Ubuntu 22.04"
-                  operatingSystem:
-                  - ubuntu:
-                    - distUpgradeOnBoot: false
             providerConfigRef:
               name: default
+            forProvider:
+              spec:
+                - replicas: 1
+                  template:
+                    - cloud:
+                        - openstack:
+                            - flavor: m2.small
+                              image: "Ubuntu Jammy 22.04"
+                      operatingSystem:
+                        - ubuntu:
+                            - distUpgradeOnBoot: false
         patches:
         - type: FromCompositeFieldPath
           fromFieldPath: status.clusterId
           toFieldPath: spec.forProvider.clusterId
-          policy:
-            fromFieldPath: Required
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.parameters.projectId
+          toFieldPath: spec.forProvider.projectId
         - type: FromCompositeFieldPath
           fromFieldPath: spec.parameters.nodeCount
           toFieldPath: spec.forProvider.spec[0].replicas
@@ -103,9 +103,8 @@ spec:
           fromFieldPath: spec.parameters.nodeImage
           toFieldPath: spec.forProvider.spec[0].template[0].cloud[0].openstack[0].image
         - type: FromCompositeFieldPath
+          fromFieldPath: spec.parameters.kubernetesVersion
+          toFieldPath: spec.forProvider.spec[0].template[0].versions[0].kubelet
+        - type: FromCompositeFieldPath
           fromFieldPath: metadata.name
           toFieldPath: metadata.name
-          transforms:
-          - type: string
-            string:
-              fmt: "%s-nodes"

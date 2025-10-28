@@ -15,7 +15,7 @@ spec:
         - applicationCredentials:
           - id: "s11auth:abcdefghijklmnopqrstuvwxyz012345"  # Replace with your project ID (format: s11auth:PROJECT_ID)
             secretSecretRef:
-              key: credentials
+              key: token
               name: metakube-creds
               namespace: crossplane-system
       version: "1.34.1"

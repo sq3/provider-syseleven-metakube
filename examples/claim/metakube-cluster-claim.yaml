@@ -10,8 +10,7 @@ spec:
     kubernetesVersion: "1.34.1"
     cloudProvider: openstack
     nodeCount: 2
-    nodeSize: m1.small
-    nodeImage: "Ubuntu 22.04"
+    nodeSize: m2.small
   compositionSelector:
     matchLabels:
       provider: syseleven
