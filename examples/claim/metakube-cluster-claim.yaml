@@ -5,9 +5,9 @@ metadata:
   namespace: default
 spec:
   parameters:
-    projectId: "YOUR_PROJECT_ID_HERE"
-    dcName: europe-west3-c
-    kubernetesVersion: "1.28.0"
+    projectId: "YOUR_PROJECT_ID_HERE"  # Replace with your MetaKube project ID
+    dcName: syseleven-dus2
+    kubernetesVersion: "1.34.1"
     cloudProvider: openstack
     nodeCount: 2
     nodeSize: m1.small

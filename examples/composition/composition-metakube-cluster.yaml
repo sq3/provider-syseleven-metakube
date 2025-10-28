@@ -21,19 +21,34 @@ spec:
       resources:
       - name: metakube-cluster
         base:
-          apiVersion: metakube.syseleven-metakube/v1alpha1
+          apiVersion: metakube.metakube.syseleven.io/v1alpha1
           kind: Cluster
           spec:
+            providerConfigRef:
+              name: default
             forProvider:
               spec:
               - cloud:
-                - openstack: []
-            providerConfigRef:
-              name: default
+                - openstack:
+                  - applicationCredentials:
+                    - secretSecretRef:
+                        key: credentials
+                        name: metakube-creds
+                        namespace: crossplane-system
         patches:
+        # Set projectId from claim
         - type: FromCompositeFieldPath
           fromFieldPath: spec.parameters.projectId
           toFieldPath: spec.forProvider.projectId
+        # Construct applicationCredentials.id as "s11auth:PROJECT_ID"
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.parameters.projectId
+          toFieldPath: spec.forProvider.spec[0].cloud[0].openstack[0].applicationCredentials[0].id
+          transforms:
+          - type: string
+            string:
+              type: Format
+              fmt: "s11auth:%s"
         - type: FromCompositeFieldPath
           fromFieldPath: spec.parameters.dcName
           toFieldPath: spec.forProvider.dcName

@@ -58,13 +58,10 @@ func TerraformSetupBuilder(version, providerSource, providerVersion string) terr
 			host = "https://metakube.syseleven.de"
 		}
 
+		// Provider configuration is flat, not nested
 		ps.Configuration = map[string]any{
-			"metakube": []map[string]any{
-				{
-					"host":  host,
-					"token": creds["token"],
-				},
-			},
+			"host":  host,
+			"token": creds["token"],
 		}
 		return ps, nil
 	}
